@@ -28,7 +28,8 @@ public class LoggingFilter implements GlobalFilter, Ordered {
         log.info("Incoming request: [{}] {}", method, requestPath);
 
         // skip open endpoints
-        if (requestPath.startsWith("/auth/login") || requestPath.startsWith("/public/")) {
+        if (requestPath.startsWith("/auth/login") || requestPath.startsWith("/public/") ||
+                requestPath.startsWith("/api/v1/account/user/create")) {
             return chain.filter(exchange);
         }
 
