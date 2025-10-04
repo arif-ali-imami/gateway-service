@@ -1,13 +1,19 @@
 package com.echoItSolution.gateway_service;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-//@Configuration
-public class GatewayConfig {
+@RequiredArgsConstructor
+@Configuration
+public class GatewayRouteConfig {
 
-    @Bean
+    private final AppConfig appConfig;
+
+//    @Bean
     public RouteLocator routes(RouteLocatorBuilder builder) {
         return builder.routes()
                 .route("auth-server", r -> r
@@ -18,8 +24,11 @@ public class GatewayConfig {
                         .filters(f ->
                                 f.circuitBreaker(config ->
                                         config.setName("gatewayLevelCircuitBreaker")
-                                                .setFallbackUri("forward:/fallback/booking")
-                                        ))
+                                                .setFallbackUri("forward:/fallback/booking"))
+                                .requestRateLimiter(config -> config.setRateLimiter(appConfig.redisRateLimiter())
+                                        .setKeyResolver(appConfig.ipKeyResolver())
+                                )
+                        )
                         .uri("lb://ACCOUNT-SERVICE")
                 )
                 .route("booking-service", r -> r
